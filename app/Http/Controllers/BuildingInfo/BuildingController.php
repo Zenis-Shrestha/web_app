@@ -26,6 +26,7 @@ use App\Models\UtilityInfo\Roadline;
 use App\Models\LayerInfo\Ward;
 use App\Models\LayerInfo\Lic;
 use App\Models\UtilityInfo\WaterSupplys;
+use App\Models\BuildingInfo\BuildingType;
 use App\Models\Fsm\ContaimentType;
 use App\Enums\LicStatus;
 use App\Services\BuildingInfo\BuildingStructureService;
@@ -70,6 +71,7 @@ class BuildingController extends Controller
         $page_title = "Buildings";
         $structure_type = StructureType::orderBy('type', 'asc')->pluck('type', 'id')->all();
         $water_sources = WaterSource::orderBy('source', 'asc')->pluck('source', 'id')->all();
+        $building_type = BuildingType::orderBy('type_name', 'asc')->pluck('type_name', 'id')->all();
 
         $sanitation_systems = SanitationSystem::orderBy('sanitation_system', 'asc')->whereNotIn('id', [11])->pluck('sanitation_system', 'id')->all();
 
@@ -84,7 +86,7 @@ class BuildingController extends Controller
         // Capitalize the first letter of each word in the arrays
         $structure_type = array_map('ucwords', $structure_type);
         $water_sources = array_map('ucwords', $water_sources);
-        return view('building-info.buildings.index', compact('page_title', 'structure_type', 'functional_use', 'sanitation_systems', 'water_sources', 'ward', 'toiletPresence', 'floorCount'));
+        return view('building-info.buildings.index', compact('page_title', 'structure_type', 'functional_use', 'sanitation_systems', 'water_sources', 'ward', 'building_type','toiletPresence', 'floorCount'));
     }
 
     /**
@@ -95,14 +97,20 @@ class BuildingController extends Controller
     public function create()
     {
         $page_title = "Add Building";
-        $structure_type = StructureType::orderBy('type', 'asc')->pluck('type', 'id')->all();
+        $structure_type = StructureType::orderBy('id')->pluck('type', 'id')->all();
         $water_source = WaterSource::orderBy('source', 'asc')->pluck('source', 'id')->all();
+        $building_type = BuildingType::orderBy('id')->pluck('type_name', 'id')->all();
         // Capitalize the first letter of each word in the arrays
         $structure_type = array_map('ucwords', $structure_type);
         $water_source = moveOthersToEnd(array_map('ucwords', $water_source));
         $toiletConnection = SanitationSystem::whereNotIn('id', [9, 10,12])->pluck('sanitation_system', 'id')->all();
         $defecationPlace = SanitationSystem::whereIn('id', [9, 10,12])->pluck('sanitation_system', 'id')->all();
-        $containment_type = ContainmentType::pluck('type', 'id')->all();
+        $containment_type = ContainmentType::where('sanitation_system_id', 3)
+            ->pluck('type', 'id')
+            ->all();
+        $containment_type_pit = ContainmentType::where('sanitation_system_id', 4)
+            ->pluck('type', 'id')
+            ->all();
         $buildingBin = Building::distinct('bin')->pluck('bin', 'bin')->take(10)->whereNull('building_associated_to')->whereNull('deleted_at');
 
         $bin = BuildContain::distinct('bin')->pluck('bin', 'bin')->take(10)->whereNull('deleted_at');
@@ -152,6 +160,7 @@ class BuildingController extends Controller
             'structure_type',
             'functional_use',
             'use_category_id',
+            'building_type',
             'usecatgsJson',
             'containment',
             'road_code',
@@ -166,6 +175,7 @@ class BuildingController extends Controller
             'toiletConnection',
             'defecationPlace',
             'containment_type',
+            'containment_type_pit',
             'waterSupply'
         ));
     }
@@ -237,6 +247,7 @@ class BuildingController extends Controller
         $building->main_building = $building->building_associated_to ? false : true;
         $structure_type = StructureType::orderBy('type', 'asc')->pluck('type', 'id')->all();
         $water_source = WaterSource::orderBy('source', 'asc')->pluck('source', 'id')->all();
+        $building_type = BuildingType::orderBy('id')->pluck('type_name', 'id')->all();
         // Capitalize the first letter of each word in the arrays
         $structure_type = array_map('ucwords', $structure_type);
         $water_source = moveOthersToEnd(array_map('ucwords', $water_source));
@@ -304,6 +315,7 @@ class BuildingController extends Controller
             'page_title',
             'building',
             'buildingBin',
+            'building_type',
             'bin',
             'containment_id',
             'water_source',
