@@ -70,6 +70,7 @@ function dynamicBuildingForm() {
         const licStatus = $('#lic-status select').val();
 
         //Conditions for different Labels
+
         //Conditions of Building Types
         const isMainBuilding = buildingType === '1';
         const mainAssociateBuilding = buildingType === '1' || buildingType === '2';
@@ -95,7 +96,7 @@ function dynamicBuildingForm() {
         const drainCode = containmentType === '2' && mainAssociateBuilding && toiletPresence === '1';
         const binPreConnectedBuilding = (mainAssociateBuilding && (containmentType === '11'));
         const isDefecationPlace = (mainAssociateBuilding && (toiletPresence === '0'));
-        const isCommunityToiletName = (mainAssociateBuilding && (defecationPlace === '9'));
+        const isCommunityToiletName = (mainAssociateBuilding && (defecationPlace === '9') && (toiletPresence === '0'));
 
         //Conditions for Water Supply and SWM Service
         const isMunicipalWater = municipalWater === '1' && isMainBuilding;
@@ -105,7 +106,8 @@ function dynamicBuildingForm() {
 
        // Toggle mappings grouped logically for clarity
 const toggleMappings = [
-    [['.main_building_field', '.main_drinking_water', '.main_swm'], isMainBuilding],
+    [['.main_drinking_water', '.main_swm'], isMainBuilding],
+    ['.main_building_field', mainAssociateBuilding],
     ['#bin-main-building', binMainBuilding],
     [['.main_associate_building', '.toilet_status'], mainAssociateBuilding],
     ['#functional-use', functionalUse],
