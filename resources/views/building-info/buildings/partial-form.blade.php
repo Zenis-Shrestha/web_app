@@ -102,16 +102,6 @@
         </div>
     </div>
 
-    <div class="form-group row required main_building_field" style="display: none" id="road-name">
-        {!! Form::label('road_name', "Road Name", ['class' => 'col-sm-3 control-label']) !!}
-        <div class="col-sm-5">
-            {!! Form::text('road_name', null, [
-                'class' => 'form-control col-sm-10',
-                'placeholder' => 'Road Name',
-            ]) !!}
-        </div>
-    </div>
-    
     <div class="form-group row required main_building_field" style="display: none" id="house-address">
         {!! Form::label('house_address', 'House Address', ['class' => 'col-sm-3 control-label ']) !!}
         <div class="col-sm-5">
@@ -135,9 +125,9 @@
     </div>
 
     <div class="form-group row required" id="bin-main-building">
-        {!! Form::label('bin_main_building', 'BIN of Main Building', ['class' => 'col-sm-3 control-label']) !!}
+        {!! Form::label('building_associated_to', 'BIN of Main Building', ['class' => 'col-sm-3 control-label']) !!}
         <div class="col-sm-5">
-            {!! Form::text('bin_main_building',null, [
+            {!! Form::text('building_associated_to',null, [
                 'class' => 'form-control col-sm-10',
                 'placeholder' => 'BIN of Main Building',
             ]) !!}
@@ -235,7 +225,7 @@
     </div>
 
     <div class="form-group row required" style="display: none" id="number-households">
-        {!! Form::label('number_households', 'Number of Households', ['class' => 'col-sm-3 control-label']) !!}
+        {!! Form::label('household_served', 'Number of Households', ['class' => 'col-sm-3 control-label']) !!}
         <div class="col-sm-5">
             {!! Form::number('number_households', null, [
                 'class' => 'form-control col-sm-10',
@@ -366,7 +356,7 @@
         </div>
     </div>
 
-    <div class="form-group row required" id="lic_id" style="display: none">
+    <div class="form-group row required" id="lic_id" >
         {!! Form::label('lic_id', 'LIC Name', ['class' => 'col-sm-3 control-label ']) !!}
         <div class="col-sm-5">
             {!! Form::select('lic_id', $licNames, null, [
