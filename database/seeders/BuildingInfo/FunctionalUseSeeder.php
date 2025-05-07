@@ -22,14 +22,13 @@ class FunctionalUseSeeder extends Seeder
             [4, 'Health Institution'],
             [5, 'Commercial'],
             [6, 'Industrial'],
-            [7, 'Agriculture and Livestock'],
-            [8, 'Public Institution'],
-            [9, 'Government Institution'],
-            [10, 'Recreational Institution'],
-            [11, 'Social Institution'],
-            [12, 'Cultural and Religious'],
-            [13, 'Financial Institution'],
-            [14, 'Vacant/Under Construction']
+            [7, 'Public Institution'],
+            [8, 'Government Institution'],
+            [9, 'Recreational Institution'],
+            [10, 'Social Institution'],
+            [11, 'Cultural Institution'],
+            [12, 'Religious'],
+
         );
 
         foreach ($names as $name) {
