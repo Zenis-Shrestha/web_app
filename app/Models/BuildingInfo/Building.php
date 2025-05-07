@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Venturecraft\Revisionable\RevisionableTrait;
 use App\Models\BuildingInfo\SanitationSystem;
-
+use App\Models\BuildingInfo\BuildingType;
 use App\Models\LayerInfo\Lic;
 class Building extends Model
 {
@@ -85,7 +85,9 @@ class Building extends Model
     public function useCategory(){
         return $this->belongsTo(UseCategory::class,'use_category_id','id');
     }
-
+    public function buildingType(){
+        return $this->belongsTo(BuildingType::class,'building_type_id','id');
+    }
 
 
     public function SanitationSystem()

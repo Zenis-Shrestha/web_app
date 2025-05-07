@@ -72,7 +72,7 @@ class BuildingController extends Controller
         $structure_type = StructureType::orderBy('type', 'asc')->pluck('type', 'id')->all();
         $water_sources = WaterSource::orderBy('source', 'asc')->pluck('source', 'id')->all();
         $building_type = BuildingType::orderBy('type_name', 'asc')->pluck('type_name', 'id')->all();
-
+        
         $sanitation_systems = SanitationSystem::orderBy('sanitation_system', 'asc')->whereNotIn('id', [11])->pluck('sanitation_system', 'id')->all();
 
         $functional_use = FunctionalUse::orderBy('name')->pluck('name', 'id')->all();
@@ -478,21 +478,21 @@ class BuildingController extends Controller
     public function getSanitationSystem()
     {
         $building = Building::find(request()->bin);
-        
+
         $sewer_code = $building->sewer_code ?? "No Sewer Code";
         $drain_code = $building->drain_code ?? "No Drain Code";
-        $containment_ids = implode(',',$building->containments()->get()->pluck('id')->toArray()) ?? "No Containment Connected";  
+        $containment_ids = implode(',',$building->containments()->get()->pluck('id')->toArray()) ?? "No Containment Connected";
         $containment_infos = [];
         foreach($building->containments()->get() as $containment)
         {
             array_push($containment_infos, $containment->containmentType->type . " (" . $containment->id .") <br>");
         }
-        $containments = $containment_infos ? implode('',$containment_infos) : "No Containment Connected<br>"; 
+        $containments = $containment_infos ? implode('',$containment_infos) : "No Containment Connected<br>";
         $data = "Building Toilet Connection:" . $building->SanitationSystem->sanitation_system . "<br> Containment Info:<br>".  $containments . "Drain Code: " . $drain_code ."<br>Sewer Code:" . $sewer_code;
         if ($building) {
             return response()->json([
                 'success' => true,
-                'data' => $data, 
+                'data' => $data,
                 ]);
         }
 }

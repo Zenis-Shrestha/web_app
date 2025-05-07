@@ -31,7 +31,7 @@ class BuildingRequest extends FormRequest
             'owner_contact.required_if' => 'Owner Contact Number is required',
 
             //Building Information
-            'main_building.required' => "The Main Building is required.",
+            'building_type_id.required' => "The Main Building is required.",
             'building_associated_to.required_if' => "The BIN of Main Building is required.",
             'floor_count.required_if' => 'Number of Floors is required',
             'tax_code.required_if' => 'Tax Code/Holding ID is required',
@@ -39,10 +39,10 @@ class BuildingRequest extends FormRequest
             'structure_type_id.required' => 'Structure Type is required.',
             'functional_use_id.required_if' => 'Functional Use of Building is required.',
             'house_number.unique' => 'The House Number is Already Taken',
-            'main_building.required' => "The Main Building Type required.",
+
             'building_associated_to.required_if' => "BIN of Main Building required.",
             'ward.required_if' => 'Ward Number required.',
-            'structure_type_id.required' => 'Structure Type  required.',
+            // 'structure_type_id.required' => 'Structure Type  required.',
             'house_number.unique' => 'The House Number is Taken',
             //population Validation
             'diff_abled_male_pop.lte' => 'The Differently Abled Male Population must not exceed the Male Population.',
@@ -66,7 +66,7 @@ class BuildingRequest extends FormRequest
 
             'size.required_if' => 'Containment Volume (m³) is required. Enter dimensions to auto generate.',
 
-            // 'geom.required_if' => 'Building Footprint (KML) is required.',
+
             'floor_count.numeric' => 'Number of Floors should be numeric value.',
             'use_category_id.required_with' => 'Use Category of Building is required.',
 
@@ -128,30 +128,39 @@ class BuildingRequest extends FormRequest
         $use_cat = $this->input('use_category_id');
         return [
             // // Owner Infomation
-            'owner_name' => 'required_if:building_type,1',
-            'owner_contact' => 'required_if:building_type,1|integer|min:0|nullable',
-            'owner_gender' => 'required_if:building_type,1',
+            'owner_name' => 'required_if:building_type_id,1',
+            'owner_contact' => 'required_if:building_type_id,1|integer|min:0|nullable',
+            'owner_gender' => 'required_if:building_type_id,1',
             //Building Information
-            'main_building' => 'required',
-            'building_associated_to' => 'required_if:main_building,0',
-            'ward' => 'required_if:main_building,1',
-            'road_code' => 'required_if:main_building,1',
+            'building_type_id' => 'required',
+            'ward' => 'required_if:building_type_id,1',
+            'road_code' => 'required_if:building_type_id,1',
             'house_number' => 'nullable|unique:pgsql.building_info.buildings,house_number',
-            'tax_code' => 'required_if:main_building,1',
-            'structure_type_id' => 'required',
+            'tax_code' => 'required_if:building_type_id,1',
+             'structure_type_id' => 'required',
              //year of building Construction
-            'construction_year' => 'required_if:building_type,1,2|date|before_or_equal:today|nullable',
-            'floor_count' => 'required_if:building_type,1,2|nullable|numeric|min:0.1',
-            'functional_use_id' => 'required_if:building_type,1,2,3,4',
+            'construction_year' => 'required_if:building_type_id,1,2|date|before_or_equal:today|nullable',
+            'floor_count' => 'required_if:building_type_id,1,2|nullable|numeric|min:0.1',
+            'functional_use_id' => 'required_if:building_type_id,1,2,3,4',
             'use_category_id' => 'required_with:functional_use_id',
             'household_served' => [
-                // not required if use cat is Public Toilet or Community Toilet
-                'required_if:building_type,1,2',
-                'required_if:functional_use,1,2',
+                function ($attribute, $value, $fail) {
+                    $buildingType = $this->input('building_type_id');
+                    $functionalUse = $this->input('functional_use');
+
+                    if (
+                        in_array($buildingType, [1, 2]) &&
+                        in_array($functionalUse, [1, 2]) &&
+                        ($value === null || $value === '')
+                    ) {
+                        $fail('The ' . str_replace('_', ' ', $attribute) . ' field is required when both building type and functional use are 1 or 2.');
+                    }
+                },
                 'nullable',
                 'integer',
                 'min:0',
             ],
+
             'male_population' => 'nullable|integer|min:0',
             'female_population' => 'nullable|integer|min:0',
             'other_population' => 'nullable|integer|min:0',
@@ -159,24 +168,32 @@ class BuildingRequest extends FormRequest
             'diff_abled_female_pop' => 'nullable|integer|min:0|exclude_if:diff_abled_female_pop,0|lte:female_population',
             'diff_abled_others_pop' => 'nullable|integer|min:0|exclude_if:diff_abled_others_pop,0|lte:other_population',
             'population_served' => [
-                // not required if use cat is Public Toilet or Community Toilet
-                'required_if:building_type,1,2',
-                'required_if:functional_use,1,2',
+                function ($attribute, $value, $fail) {
+                    $buildingType = $this->input('building_type_id');
+                    $functionalUse = $this->input('functional_use');
+
+                    if (
+                        in_array($buildingType, [1, 2]) &&
+                        in_array($functionalUse, [1, 2]) &&
+                        ($value === null || $value === '')
+                    ) {
+                        $fail('The ' . str_replace('_', ' ', $attribute) . ' field is required when both building type and functional use are 1 or 2.');
+                    }
+                },
                 'nullable',
                 'integer',
                 'min:0',
             ],
-           
             //Lic Information
-            'low_income_hh' => 'required_if:building_type,1',
+            'low_income_hh' => 'required_if:building_type_id,1',
             'lic_id' => 'required_if:lic_status,1',
             //water source Information
-            'water_source_id' => 'required_if:building_type,1',
+            'water_source_id' => 'required_if:building_type_id,1',
             'watersupply_pipe_code' => 'required_if:water_source_id,1',
             //sanitation system Information
-            'toilet_status' => ['required_if:building_type,1,2',
+            'toilet_status' => ['required_if:building_type_id,1,2',
              function ($attribute, $value, $fail) use ($use_cat) {
-                if (($use_cat == 34 && $value != true) || ($use_cat == 35 && $value != true) ) {
+                if (($use_cat == 24 && $value != true) || ($use_cat == 25 && $value != true) ) {
                     $fail("The Toilet Presence must be Yes when Use Category is Public Toilet or Community Toilet");
                 }
             }
@@ -187,13 +204,12 @@ class BuildingRequest extends FormRequest
             'ctpt_name' => 'exclude_if:toilet_status,1 | required_if:defecation_place,9',
             'household_with_private_toilet' => 'nullable |min:0 | lte:household_served',
             'population_with_private_toilet' =>'nullable|min:0| lte:population_served',
-           
             // containment validation
-            // exclude if has been used to ensure cascading parent values are also checked below 
+            // exclude if has been used to ensure cascading parent values are also checked below
             // child values are validated. E.g., dont validation type_id if toilet is no
             'type_id' => 'exclude_if:toilet_status,0 | required_if:sanitation_system_id,3,4',
             'size' =>  'exclude_if:toilet_status,0 | required_if:sanitation_system_id,3,4',
-            // exclude if has been used to ensure cascading parent values are also checked below 
+            // exclude if has been used to ensure cascading parent values are also checked below
             // child values are validated. E.g., dont validation type_id if toilet is no
             'type_id' => 'exclude_if:toilet_status,0 | required_if:sanitation_system_id,3,4',
             'size' =>  'exclude_if:toilet_status,0 | required_if:sanitation_system_id,3,4',
@@ -206,15 +222,16 @@ class BuildingRequest extends FormRequest
             //drain and sewer code
             'sewer_code' => 'exclude_if:toilet_status,0 |exclude_if:type_id,2,14 | required_if:sanitation_system_id,1| required_if:type_id,1,13',
             'drain_code' => 'exclude_if:toilet_status,0 |exclude_if:type_id,1,13 |  required_if:sanitation_system_id,2 | required_if:type_id,2,14',
-            // 'geom' => 'required_if:kml,null|file_extension:kml|max:1024',
-            'house_image' => 'nullable|image|mimes:jpeg,jpg|max:5120', // 5MB = 5120KB
+             'geom' => 'required_if:kml,null|file_extension:kml|max:1024',
+
+            // 'house_image' => 'nullable|image|mimes:jpeg,jpg|max:5120', // 5MB = 5120KB
 
         ];
     }
 
     public function update()
     {
-        $bin = $this->input('building'); 
+        $bin = $this->input('building');
         $use_cat = $this->input('use_category_id');
         Validator::extend('file_extension', function ($attribute, $value, $parameters, $validator) {
             if (!in_array($value->getClientOriginalExtension(), $parameters)) {
@@ -226,26 +243,26 @@ class BuildingRequest extends FormRequest
         return [
             //  compulsory fields
             // Owner Information
-            'owner_name' => 'required_if:building_type,1',
-            'owner_contact' => 'required_if:building_type,1|integer|min:0|nullable',
-            'owner_gender' => 'required_if:building_type,1',
+            'owner_name' => 'required_if:building_type_id,1',
+            'owner_contact' => 'required_if:building_type_id,1|integer|min:0|nullable',
+            'owner_gender' => 'required_if:building_type_id,1',
             //Building Information
-            'main_building' => 'required',
+            'building_type_id' => 'required',
             // associated bin required only if not main building
-            'building_associated_to' => 'required_if:building_type,0',
-            'ward' => 'required_if:building_type,1',
-            'road_code' => 'required_if:building_type,1',
+            'building_associated_to' => 'required_if:building_type_id,0',
+            'ward' => 'required_if:building_type_id,1',
+            'road_code' => 'required_if:building_type_id,1',
             'house_number' => 'nullable|unique:pgsql.building_info.buildings,bin,' . $bin . ',bin',
-            'tax_code' => 'required_if:building_type,1',
+            'tax_code' => 'required_if:building_type_id,1',
             'structure_type_id' => 'required',
             'use_category_id' => 'required_with:functional_use_id',
             //year of building Construction
-            'construction_year' => 'required_if:building_type,1,2|date|before_or_equal:today|nullable',
-            'floor_count' => 'required_if:building_type,1,2|nullable|numeric|min:0.1',
-            'functional_use_id' => 'required_if:building_type,1,2,3,4',
+            'construction_year' => 'required_if:building_type_id,1,2|date|before_or_equal:today|nullable',
+            'floor_count' => 'required_if:building_type_id,1,2|nullable|numeric|min:0.1',
+            'functional_use_id' => 'required_if:building_type_id,1,2,3,4',
             'household_served' => [
                 // not required if use cat is Public Toilet or Community Toilet
-                'required_if:building_type,1,2',
+                'required_if:building_type_id,1,2',
                 'required_if:functional_use,1,2',
                 'integer',
                 'nullable',
@@ -253,7 +270,7 @@ class BuildingRequest extends FormRequest
             ],
             'population_served' => [
                 // not required if use cat is Public Toilet or Community Toilet
-                'required_if:building_type,1,2',
+                'required_if:building_type_id,1,2',
                 'required_if:functional_use,1,2',
                 'integer',
                 'nullable',
@@ -263,17 +280,17 @@ class BuildingRequest extends FormRequest
             'diff_abled_female_pop' => 'nullable|integer|min:0|exclude_if:diff_abled_female_pop,0|lte:female_population',
             'diff_abled_others_pop' => 'nullable|integer|min:0|exclude_if:diff_abled_others_pop,0|lte:other_population',
             //Lic Information
-            'low_income_hh' => 'required_if:building_type,1',
+            'low_income_hh' => 'required_if:building_type_id,1',
             'lic_id' => 'required_if:lic_status,1',
             //water source Information
-            'water_source_id' => 'required_if:building_type,1',
+            'water_source_id' => 'required_if:building_type_id,1',
             'lic_id' => 'required_if:lic_status,1',
             'watersupply_pipe_code' => 'required_if:water_source_id,1',
 
             //sanitation system Information
-            'toilet_status' => ['required_if:building_type,1,2',
+            'toilet_status' => ['required_if:building_type_id,1,2',
             function ($attribute, $value, $fail) use ($use_cat) {
-               if (($use_cat == 34 && $value != true) || ($use_cat == 35 && $value != true) ) {
+               if (($use_cat == 24 && $value != true) || ($use_cat == 25 && $value != true) ) {
                    $fail("The Toilet Presence must be Yes when Use Category is Public Toilet or Community Toilet");
                }
            }
@@ -290,7 +307,7 @@ class BuildingRequest extends FormRequest
             'drain_code' => 'exclude_if:toilet_status,0 |required_if:sanitation_system_id,2',
             'build_contain' => 'exclude_if:toilet_status,0 |required_if:sanitation_system_id,11',
             'house_image' => 'nullable|image|mimes:jpeg,jpg|max:5120', // 5MB = 5120KB
-            // 'geom' => 'nullable|file_extension:kml|max:1024',
+
         ];
     }
 }

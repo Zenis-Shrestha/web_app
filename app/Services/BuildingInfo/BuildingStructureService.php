@@ -42,19 +42,19 @@ class BuildingStructureService
     public function storeBuildingData(Request $request)
     {
         DB::beginTransaction();
-        try {
+        // try {
+
 
             $maxBIN = Building::withTrashed()->max('bin');
             $maxBIN = (int) str_replace('B', '', $maxBIN); // cast to integer
             // creating new model to add data to buildings table
             $building = new Building();
+
             $building->bin = 'B' . sprintf('%06d', $maxBIN + 1);
             $request->bin = $building->bin;
             // owner information stored to BuildingInfo.owners
             // check if main building, if not main, store main building bin in associated_to column
-            if ($request->main_building == false) {
-                $building->building_associated_to = $request->building_associated_to ? $request->building_associated_to : null;
-            }
+            $building->building_type_id = $request->building_type_id;
             $building->ward = $request->ward ? $request->ward : null;
             $building->road_code = $request->road_code ? $request->road_code : null;
             $building->house_number = $request->house_number ? $request->house_number : null;
@@ -81,7 +81,10 @@ class BuildingStructureService
             $building->diff_abled_male_pop = $request->diff_abled_male_pop ? $request->diff_abled_male_pop : null;
             $building->diff_abled_female_pop = $request->diff_abled_female_pop ? $request->diff_abled_female_pop : null;
             $building->diff_abled_others_pop = $request->diff_abled_others_pop ? $request->diff_abled_others_pop : null;
-            //check wheter the building is low income building
+
+            if ($request->building_type_id == 1 ){
+                $building->age_of_building= $request->age_of_building;
+                  //check wheter the building is low income building
             $building->low_income_hh = $request->low_income_hh;
             //check wheter the building is located in LIC area
             if ($request->lic_status == true) {
@@ -99,6 +102,7 @@ class BuildingStructureService
                 $building->distance_from_well = $request->distance_from_well ? $request->distance_from_well : null;
             }
             $building->swm_customer_id = $request->swm_customer_id ? $request->swm_customer_id : null;
+        }
             $building->toilet_status = $request->toilet_status;
             // storing house image in folder /public/emptyings/houses
             if ($request->hasFile('house_image')) {
@@ -141,13 +145,16 @@ class BuildingStructureService
             $building->desludging_vehicle_accessible = $request->desludging_vehicle_accessible ? $request->desludging_vehicle_accessible : null;
             $building->save();
 
+            if ($request->building_type_id == 1) {
+                $this->storeOwnerInfo($request);
+            }
             if ($building) {
                 if (!empty($request->survey_id)) {
                     $buildingSurvey = DB::table('building_info.building_surveys')
                     ->where('id', $request->survey_id)
                     ->update(['is_enabled' => false]);
                 }
-                $this->storeOwnerInfo($request);
+
                 // check sanitiation type and send to function with respective flag
                 //  conditions if sanitation system is shared containment
                 // matching keyword shared of Shared Containment
@@ -167,10 +174,10 @@ class BuildingStructureService
             }
             DB::commit();
             return redirect('building-info/buildings')->with('success', "Building created successfully ");
-        } catch (\Exception $e) {
-            DB::rollback();
-            return redirect('building-info/buildings')->with('error', "Building could not be created ");
-        }
+        // } catch (\Exception $e) {
+        //     DB::rollback();
+        //     return redirect('building-info/buildings')->with('error', "Building could not be created ");
+        // }
     }
 
 
@@ -968,6 +975,8 @@ class BuildingStructureService
         $buildingData = Building::LeftJoin('building_info.owners', 'building_info.buildings.bin', '=', 'building_info.owners.bin')
             ->LeftJoin('building_info.structure_types', 'building_info.structure_types.id', '=', 'building_info.buildings.structure_type_id')
             ->LeftJoin('building_info.sanitation_systems', 'building_info.buildings.sanitation_system_id', '=', 'building_info.sanitation_systems.id')
+            ->LeftJoin('building_info.building_type', 'building_info.buildings.building_type_id', '=', 'building_info.building_type.id')
+
             ->select(
                 'building_info.buildings.bin AS bin',
                 'building_info.buildings.house_number AS house_number',
@@ -979,7 +988,9 @@ class BuildingStructureService
                 'building_info.buildings.toilet_status AS toilet_status',
                 'building_info.buildings.road_code AS road_code',
                 'building_info.owners.owner_name AS owner_name',
-                'building_info.sanitation_systems.sanitation_system as sanitation_system_id'
+                'building_info.sanitation_systems.sanitation_system as sanitation_system_id',
+                'building_info.building_type.type_name AS building_type_id',
+
             )
             ->whereNull('building_info.buildings.deleted_at');
         return DataTables::of($buildingData)
@@ -1023,6 +1034,9 @@ class BuildingStructureService
                 }
                 if ($request->sanitation_system_id) {
                     $query->where('sanitation_system_id', $request->sanitation_system_id);
+                }
+                if ($request->building_type_id) {
+                    $query->where('building_type_id', $request->building_type_id);
                 }
                 if ($request->floor_count) {
 
