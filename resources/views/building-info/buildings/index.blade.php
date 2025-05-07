@@ -172,6 +172,19 @@
                                                 </select>
                                             </div>
                                         </div>
+
+
+                                        <div class="form-group row">
+                                            <label for="building_type_select" class="control-label col-md-2">Building Type</label>
+                                            <div class="col-md-2">
+                                                <select class="form-control" id="building_type_select">
+                                                    <option value="">Building Type</option>
+                                                    @foreach ($building_type as $key => $value)
+                                                        <option value="{{ $key }}">{{ $value }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="card-footer text-right">
                                             <button type="submit" class="btn btn-info">Filter</button>
                                             <button type="reset" id="reset-filter" class="btn btn-info">Reset</button>
@@ -199,6 +212,7 @@
                 <thead>
                     <tr>
                         <th>BIN</th>
+                        <th>Building Type</th>
                         <th>House Number</th>
                         <th>Road Code</th>
                         <th>Ward Number</th>
@@ -226,6 +240,7 @@
         $(function() {
 
             var bin = '';
+            var building_type = '';
             var house_number ='';
             var structype = '';
             var ward = '';
@@ -248,6 +263,8 @@
                     url: '{!! url('building-info/buildings/data') !!}',
                     data: function(d) {
                         d.bin = $('#bin_text').val();
+                        d.building_type = $('#building_type_select').val();
+
                         d.house_number = $('#house_number').val();
                         d.structype = $('#structype_select').val();
                         d.ward = $('#ward_select').val();
@@ -273,6 +290,10 @@
                     {
                         data: 'bin',
                         name: 'bin'
+                    },
+                    {
+                        data: 'building_type_id',
+                        name: 'building_type_id'
                     },
                     {
                         data: 'house_number',
@@ -347,6 +368,7 @@
 
             var bin = '',
             house_number ='',
+            building_type_id = '',
                 structype = '',
                 ward = '',
                 roadcd = '',
@@ -410,6 +432,7 @@
                 e.preventDefault();
                 dataTable.draw();
                 bin = $('#bin_text').val();
+                building_type_id =   $('#building_type_id').val();
                 house_number = $('#house_number').val();
                 structype = $('#structype_select').val();
                 ward = $('#ward_select').val();
@@ -455,6 +478,8 @@
 
                 var searchData = $('input[type=search]').val();
                 var bin = $('#bin_text').val();
+                var building_type_id = $('#building_type_id').val();
+
                  var house_number = $('#house_number').val();
                 var structype = $('#structype_select').val();
                 var ward = $('#ward_select').val();
@@ -472,6 +497,8 @@
                 window.location.href = "{!! url('building-info/buildings/export?searchData=') !!}" +
                     searchData +
                     "&bin=" + bin +
+                    "&building_type_id=" + building_type_id +
+
                     "&house_number=" + house_number +
                     "&structype=" + structype +
                     "&ward=" + ward +
@@ -502,6 +529,7 @@
 
             function getCQLParams() {
                 bin = $('#bin_text').val();
+                building_type_id =  $('#building_type_id').val();
                 structype = $('#structype_select').val();
                 ward = $('#ward_select').val();
                 functional_use = $('#functional_use_select').val();
@@ -554,6 +582,9 @@
                 }
                 if (sanitation_system_id) {
                     cql_param += " AND sanitation_system_id = '" + sanitation_system_id + "'";
+                }
+                if (building_type_id) {
+                    cql_param += " AND building_type_id = '" + building_type_id + "'";
                 }
                 if (floor_count) {
                     cql_param += " AND strConcat(floor_count,'')  ILIKE '" + floor_count + "%'";
